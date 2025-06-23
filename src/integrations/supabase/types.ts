@@ -9,7 +9,69 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      cocktails: {
+        Row: {
+          abv_percentage: number | null
+          category: string
+          created_at: string
+          difficulty: string
+          drink_name: string
+          flavor_profile: string[]
+          garnish: string | null
+          glass_type: string
+          id: string
+          ingredients: string
+          measurements: string
+          serving_size: string | null
+          steps: string
+          strength: string
+          tips: string | null
+          tools: string
+          updated_at: string
+          video_link: string | null
+        }
+        Insert: {
+          abv_percentage?: number | null
+          category: string
+          created_at?: string
+          difficulty: string
+          drink_name: string
+          flavor_profile?: string[]
+          garnish?: string | null
+          glass_type: string
+          id?: string
+          ingredients: string
+          measurements: string
+          serving_size?: string | null
+          steps: string
+          strength: string
+          tips?: string | null
+          tools: string
+          updated_at?: string
+          video_link?: string | null
+        }
+        Update: {
+          abv_percentage?: number | null
+          category?: string
+          created_at?: string
+          difficulty?: string
+          drink_name?: string
+          flavor_profile?: string[]
+          garnish?: string | null
+          glass_type?: string
+          id?: string
+          ingredients?: string
+          measurements?: string
+          serving_size?: string | null
+          steps?: string
+          strength?: string
+          tips?: string | null
+          tools?: string
+          updated_at?: string
+          video_link?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
