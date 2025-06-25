@@ -1,35 +1,59 @@
 
 import React from 'react';
-import { ArrowLeft, List, Clock, Thermometer, Scale, Wine, Coffee } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import ReferenceCard from '../components/ReferenceCard';
 import BottomNavigation from '../components/BottomNavigation';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
+import { 
+  List, Clock, Wine, Scale, Thermometer, Coffee
+} from 'lucide-react';
 
 const Reference = () => {
   const navigate = useNavigate();
 
-  const quickReferences = [
-    { title: 'Ingredient Substitutions', icon: List },
-    { title: 'Prep Times', icon: Clock },
-    { title: 'Glassware Guide', icon: Wine },
-    { title: 'ABV Chart', icon: Scale },
-    { title: 'Temperature Conversions', icon: Thermometer },
-    { title: 'Measurement Conversions', icon: Scale },
-  ];
-
-  const recommendations = [
-    { title: 'Classic Cocktails', icon: Wine },
-    { title: 'Wine Pairings', icon: Wine },
-    { title: 'Craft Beer Styles', icon: Coffee },
-    { title: 'Top Shelf Spirits', icon: Wine },
-    { title: 'Non-Alcoholic Options', icon: Coffee },
-    { title: 'Garnishes', icon: List },
-  ];
-
-  const handleReferenceClick = (title: string) => {
-    console.log('Opening reference:', title);
-    // Here you would typically navigate to a detailed reference page
+  // Map icon names to actual Lucide icons
+  const iconMap = {
+    'List': List,
+    'Clock': Clock,
+    'Wine': Wine,
+    'Scale': Scale,
+    'Thermometer': Thermometer,
+    'Coffee': Coffee,
   };
+
+  // Fetch reference guides from database
+  const { data: references, isLoading, error } = useQuery({
+    queryKey: ['references'],
+    queryFn: async () => {
+      console.log('Fetching reference guides');
+      
+      const { data, error } = await supabase
+        .from('reference_guides')
+        .select('*')
+        .order('category', { ascending: true });
+      
+      if (error) {
+        console.error('Error fetching reference guides:', error);
+        toast.error('Failed to load reference guides');
+        throw error;
+      }
+      
+      console.log('Fetched reference guides:', data);
+      return data || [];
+    },
+  });
+
+  const handleReferenceClick = (reference: any) => {
+    console.log('Opening reference:', reference.title);
+    navigate(`/reference/${reference.id}`);
+  };
+
+  // Group references by category
+  const quickReferences = references?.filter(ref => ref.category === 'quick_reference') || [];
+  const recommendations = references?.filter(ref => ref.category === 'recommendations') || [];
 
   return (
     <div className="min-h-screen bg-bartender-background pb-20">
@@ -45,37 +69,72 @@ const Reference = () => {
           <h1 className="text-2xl font-bold text-foreground">Cheat Sheet</h1>
         </div>
 
-        {/* Quick References Section */}
-        <div className="mb-8">
-          <h2 className="text-xl font-bold text-foreground mb-4">Quick References</h2>
-          <div className="grid grid-cols-2 gap-4">
-            {quickReferences.map((item, index) => (
-              <div key={item.title} style={{ animationDelay: `${index * 0.1}s` }}>
-                <ReferenceCard 
-                  title={item.title}
-                  icon={item.icon}
-                  onClick={() => handleReferenceClick(item.title)}
-                />
-              </div>
-            ))}
+        {/* Loading State */}
+        {isLoading && (
+          <div className="text-center py-8">
+            <p className="text-muted-foreground">Loading reference guides...</p>
           </div>
-        </div>
+        )}
 
-        {/* Recommendations Section */}
-        <div>
-          <h2 className="text-xl font-bold text-foreground mb-4">Recommendations</h2>
-          <div className="grid grid-cols-2 gap-4">
-            {recommendations.map((item, index) => (
-              <div key={item.title} style={{ animationDelay: `${(index + quickReferences.length) * 0.1}s` }}>
-                <ReferenceCard 
-                  title={item.title}
-                  icon={item.icon}
-                  onClick={() => handleReferenceClick(item.title)}
-                />
-              </div>
-            ))}
+        {/* Error State */}
+        {error && (
+          <div className="text-center py-8">
+            <p className="text-red-500">Failed to load reference guides. Please try again.</p>
           </div>
-        </div>
+        )}
+
+        {references && (
+          <>
+            {/* Quick References Section */}
+            {quickReferences.length > 0 && (
+              <div className="mb-8">
+                <h2 className="text-xl font-bold text-foreground mb-4">Quick References</h2>
+                <div className="grid grid-cols-2 gap-4">
+                  {quickReferences.map((item, index) => {
+                    const IconComponent = iconMap[item.icon_name as keyof typeof iconMap] || List;
+                    return (
+                      <div key={item.id} style={{ animationDelay: `${index * 0.1}s` }}>
+                        <ReferenceCard 
+                          title={item.title}
+                          icon={IconComponent}
+                          onClick={() => handleReferenceClick(item)}
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Recommendations Section */}
+            {recommendations.length > 0 && (
+              <div>
+                <h2 className="text-xl font-bold text-foreground mb-4">Recommendations</h2>
+                <div className="grid grid-cols-2 gap-4">
+                  {recommendations.map((item, index) => {
+                    const IconComponent = iconMap[item.icon_name as keyof typeof iconMap] || Wine;
+                    return (
+                      <div key={item.id} style={{ animationDelay: `${(index + quickReferences.length) * 0.1}s` }}>
+                        <ReferenceCard 
+                          title={item.title}
+                          icon={IconComponent}
+                          onClick={() => handleReferenceClick(item)}
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </>
+        )}
+
+        {/* No references found */}
+        {references && references.length === 0 && !isLoading && (
+          <div className="text-center py-8">
+            <p className="text-muted-foreground">No reference guides found.</p>
+          </div>
+        )}
       </div>
 
       <BottomNavigation />

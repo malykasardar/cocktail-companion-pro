@@ -9,6 +9,8 @@ import Quiz from "./pages/Quiz";
 import Flavors from "./pages/Flavors";
 import DrinkWise from "./pages/DrinkWise";
 import Reference from "./pages/Reference";
+import LessonDetail from "./pages/LessonDetail";
+import ReferenceDetail from "./pages/ReferenceDetail";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -25,6 +27,8 @@ const App = () => (
           <Route path="/flavors" element={<Flavors />} />
           <Route path="/drinkwise" element={<DrinkWise />} />
           <Route path="/reference" element={<Reference />} />
+          <Route path="/lesson/:id" element={<LessonDetail />} />
+          <Route path="/reference/:id" element={<ReferenceDetail />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

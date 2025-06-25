@@ -1,51 +1,46 @@
 
 import React from 'react';
 import { Search } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
 import LessonCard from '../components/LessonCard';
 import BottomNavigation from '../components/BottomNavigation';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 const Learn = () => {
-  const categories = ['All', 'Basics', 'Techniques', 'Recipes'];
+  const navigate = useNavigate();
+  const categories = ['All', 'Basics', 'Techniques', 'Recipes', 'Advanced'];
   const [activeCategory, setActiveCategory] = React.useState('All');
 
-  const lessons = [
-    {
-      id: 1,
-      title: 'Introduction to Bartending',
-      description: 'Learn the basics of bartending, including essential tools, glassware, and ingredients.',
-      duration: '15 min',
-      difficulty: 'Beginner' as const,
-      image: 'https://images.unsplash.com/photo-1551538827-9c037cb4f32a?w=400&h=300&fit=crop'
+  // Fetch lessons from database
+  const { data: lessons, isLoading, error } = useQuery({
+    queryKey: ['lessons', activeCategory],
+    queryFn: async () => {
+      console.log('Fetching lessons for category:', activeCategory);
+      
+      let query = supabase.from('lessons').select('*').order('created_at', { ascending: true });
+      
+      if (activeCategory !== 'All') {
+        query = query.eq('category', activeCategory);
+      }
+      
+      const { data, error } = await query;
+      
+      if (error) {
+        console.error('Error fetching lessons:', error);
+        toast.error('Failed to load lessons');
+        throw error;
+      }
+      
+      console.log('Fetched lessons:', data);
+      return data || [];
     },
-    {
-      id: 2,
-      title: 'Mastering Basic Techniques',
-      description: 'Learn essential bartending techniques such as pouring, stirring, shaking, and muddling.',
-      duration: '20 min',
-      difficulty: 'Beginner' as const,
-      image: 'https://images.unsplash.com/photo-1546171753-97d7676e4602?w=400&h=300&fit=crop'
-    },
-    {
-      id: 3,
-      title: 'Crafting Classic Cocktails',
-      description: 'Discover how to make classic cocktails like the Old Fashioned, Margarita, and Martini.',
-      duration: '25 min',
-      difficulty: 'Intermediate' as const,
-      image: 'https://images.unsplash.com/photo-1551538827-9c037cb4f32a?w=400&h=300&fit=crop'
-    },
-    {
-      id: 4,
-      title: 'Advanced Mixology',
-      description: 'Explore advanced mixology techniques and create unique and innovative cocktails.',
-      duration: '30 min',
-      difficulty: 'Advanced' as const,
-      image: 'https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=400&h=300&fit=crop'
-    }
-  ];
+  });
 
   const handleLessonClick = (lesson: any) => {
     console.log('Opening lesson:', lesson.title);
-    // Here you would typically navigate to a detailed lesson page
+    navigate(`/lesson/${lesson.id}`);
   };
 
   return (
@@ -76,14 +71,47 @@ const Learn = () => {
           ))}
         </div>
 
+        {/* Loading State */}
+        {isLoading && (
+          <div className="text-center py-8">
+            <p className="text-muted-foreground">Loading lessons...</p>
+          </div>
+        )}
+
+        {/* Error State */}
+        {error && (
+          <div className="text-center py-8">
+            <p className="text-red-500">Failed to load lessons. Please try again.</p>
+          </div>
+        )}
+
         {/* Lessons Grid */}
-        <div className="space-y-6">
-          {lessons.map((lesson, index) => (
-            <div key={lesson.id} style={{ animationDelay: `${index * 0.1}s` }}>
-              <LessonCard lesson={lesson} onClick={() => handleLessonClick(lesson)} />
-            </div>
-          ))}
-        </div>
+        {lessons && lessons.length > 0 && (
+          <div className="space-y-6">
+            {lessons.map((lesson, index) => (
+              <div key={lesson.id} style={{ animationDelay: `${index * 0.1}s` }}>
+                <LessonCard 
+                  lesson={{
+                    id: lesson.id,
+                    title: lesson.title,
+                    description: lesson.description,
+                    duration: lesson.duration,
+                    difficulty: lesson.difficulty as 'Beginner' | 'Intermediate' | 'Advanced',
+                    image: lesson.image_url || 'https://images.unsplash.com/photo-1551538827-9c037cb4f32a?w=400&h=300&fit=crop'
+                  }}
+                  onClick={() => handleLessonClick(lesson)} 
+                />
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* No lessons found */}
+        {lessons && lessons.length === 0 && !isLoading && (
+          <div className="text-center py-8">
+            <p className="text-muted-foreground">No lessons found for this category.</p>
+          </div>
+        )}
       </div>
 
       <BottomNavigation />
