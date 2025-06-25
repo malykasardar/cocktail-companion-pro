@@ -2,9 +2,12 @@
 import React, { useState } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import FlavorCard from '../components/FlavorCard';
 import CocktailCard from '../components/CocktailCard';
 import BottomNavigation from '../components/BottomNavigation';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 const Flavors = () => {
   const navigate = useNavigate();
@@ -12,93 +15,71 @@ const Flavors = () => {
 
   const flavorProfiles = [
     {
-      id: 'fruity',
-      name: 'Fruity',
-      description: 'Sweet and fresh fruit flavors',
-      image: 'https://images.unsplash.com/photo-1551538827-9c037cb4f32a?w=300&h=300&fit=crop'
-    },
-    {
-      id: 'bubbly',
-      name: 'Bubbly',
-      description: 'Effervescent and light',
-      image: 'https://images.unsplash.com/photo-1546171753-97d7676e4602?w=300&h=300&fit=crop'
-    },
-    {
-      id: 'spicy',
-      name: 'Spicy',
-      description: 'Bold and warming spices',
-      image: 'https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=300&h=300&fit=crop'
-    },
-    {
-      id: 'sweet',
+      id: 'Sweet',
       name: 'Sweet',
       description: 'Rich and indulgent sweetness',
       image: 'https://images.unsplash.com/photo-1551538827-9c037cb4f32a?w=300&h=300&fit=crop'
     },
     {
-      id: 'sour',
+      id: 'Sour',
       name: 'Sour',
       description: 'Tart and tangy flavors',
       image: 'https://images.unsplash.com/photo-1546171753-97d7676e4602?w=300&h=300&fit=crop'
     },
     {
-      id: 'bitter',
+      id: 'Bitter',
       name: 'Bitter',
       description: 'Complex and sophisticated',
+      image: 'https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=300&h=300&fit=crop'
+    },
+    {
+      id: 'Herbal',
+      name: 'Herbal',
+      description: 'Fresh herbs and botanicals',
+      image: 'https://images.unsplash.com/photo-1551538827-9c037cb4f32a?w=300&h=300&fit=crop'
+    },
+    {
+      id: 'Tropical',
+      name: 'Tropical',
+      description: 'Exotic tropical fruit flavors',
+      image: 'https://images.unsplash.com/photo-1546171753-97d7676e4602?w=300&h=300&fit=crop'
+    },
+    {
+      id: 'Spicy',
+      name: 'Spicy',
+      description: 'Bold and warming spices',
       image: 'https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=300&h=300&fit=crop'
     }
   ];
 
-  const cocktailsByFlavor = {
-    fruity: [
-      {
-        id: '1',
-        name: 'Strawberry Daiquiri',
-        ingredients: ['White rum', 'Fresh strawberries', 'Lime juice', 'Simple syrup'],
-        image: 'https://images.unsplash.com/photo-1551538827-9c037cb4f32a?w=100&h=100&fit=crop',
-        description: 'A refreshing tropical cocktail with fresh strawberry flavor'
-      },
-      {
-        id: '2',
-        name: 'Peach Bellini',
-        ingredients: ['Prosecco', 'Peach purée', 'Lemon juice'],
-        image: 'https://images.unsplash.com/photo-1546171753-97d7676e4602?w=100&h=100&fit=crop',
-        description: 'Elegant sparkling cocktail with sweet peach notes'
-      },
-      {
-        id: '3',
-        name: 'Mango Mojito',
-        ingredients: ['White rum', 'Fresh mango', 'Mint leaves', 'Lime juice', 'Soda water'],
-        image: 'https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=100&h=100&fit=crop',
-        description: 'Tropical twist on the classic mojito with ripe mango'
+  // Fetch cocktails based on selected flavor
+  const { data: cocktails, isLoading, error } = useQuery({
+    queryKey: ['cocktails', selectedFlavor],
+    queryFn: async () => {
+      if (!selectedFlavor) return [];
+      
+      console.log('Fetching cocktails for flavor:', selectedFlavor);
+      
+      const { data, error } = await supabase
+        .from('cocktails')
+        .select('*')
+        .contains('flavor_profile', [selectedFlavor])
+        .order('drink_name');
+      
+      if (error) {
+        console.error('Error fetching cocktails:', error);
+        toast.error('Failed to load cocktails');
+        throw error;
       }
-    ],
-    bubbly: [
-      {
-        id: '4',
-        name: 'Classic Champagne Cocktail',
-        ingredients: ['Champagne', 'Sugar cube', 'Angostura bitters', 'Lemon twist'],
-        image: 'https://images.unsplash.com/photo-1551538827-9c037cb4f32a?w=100&h=100&fit=crop',
-        description: 'Timeless elegant cocktail perfect for celebrations'
-      },
-      {
-        id: '5',
-        name: 'Aperol Spritz',
-        ingredients: ['Aperol', 'Prosecco', 'Soda water', 'Orange slice'],
-        image: 'https://images.unsplash.com/photo-1546171753-97d7676e4602?w=100&h=100&fit=crop',
-        description: 'Light and refreshing Italian aperitif with bitter orange'
-      },
-      {
-        id: '6',
-        name: 'French 75',
-        ingredients: ['Gin', 'Lemon juice', 'Simple syrup', 'Champagne'],
-        image: 'https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=100&h=100&fit=crop',
-        description: 'Sophisticated gin cocktail topped with champagne'
-      }
-    ]
-  };
+      
+      console.log('Fetched cocktails:', data);
+      return data || [];
+    },
+    enabled: !!selectedFlavor,
+  });
 
   const handleFlavorSelect = (flavorId: string) => {
+    console.log('Selected flavor:', flavorId);
     setSelectedFlavor(flavorId);
   };
 
@@ -107,7 +88,6 @@ const Flavors = () => {
   };
 
   if (selectedFlavor) {
-    const cocktails = cocktailsByFlavor[selectedFlavor as keyof typeof cocktailsByFlavor] || [];
     const flavorName = flavorProfiles.find(f => f.id === selectedFlavor)?.name;
 
     return (
@@ -124,14 +104,37 @@ const Flavors = () => {
             <h1 className="text-2xl font-bold text-foreground">{flavorName} Cocktails</h1>
           </div>
 
+          {/* Loading state */}
+          {isLoading && (
+            <div className="text-center py-8">
+              <p className="text-muted-foreground">Loading cocktails...</p>
+            </div>
+          )}
+
+          {/* Error state */}
+          {error && (
+            <div className="text-center py-8">
+              <p className="text-red-500">Failed to load cocktails. Please try again.</p>
+            </div>
+          )}
+
           {/* Cocktail Recommendations */}
-          <div className="space-y-4">
-            {cocktails.map((cocktail, index) => (
-              <div key={cocktail.id} style={{ animationDelay: `${index * 0.1}s` }}>
-                <CocktailCard cocktail={cocktail} />
-              </div>
-            ))}
-          </div>
+          {cocktails && cocktails.length > 0 && (
+            <div className="space-y-4">
+              {cocktails.map((cocktail, index) => (
+                <div key={cocktail.id} style={{ animationDelay: `${index * 0.1}s` }}>
+                  <CocktailCard cocktail={cocktail} />
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* No cocktails found */}
+          {cocktails && cocktails.length === 0 && !isLoading && (
+            <div className="text-center py-8">
+              <p className="text-muted-foreground">No cocktails found for this flavor profile.</p>
+            </div>
+          )}
         </div>
 
         <BottomNavigation />

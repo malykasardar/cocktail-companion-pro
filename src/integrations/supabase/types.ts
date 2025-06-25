@@ -72,6 +72,90 @@ export type Database = {
         }
         Relationships: []
       }
+      lessons: {
+        Row: {
+          category: string
+          content: string
+          created_at: string
+          description: string
+          difficulty: string
+          duration: string
+          equipment_needed: string[] | null
+          id: string
+          image_url: string | null
+          recipes: string[] | null
+          tips: string[] | null
+          title: string
+          updated_at: string
+          video_url: string | null
+        }
+        Insert: {
+          category: string
+          content: string
+          created_at?: string
+          description: string
+          difficulty: string
+          duration: string
+          equipment_needed?: string[] | null
+          id?: string
+          image_url?: string | null
+          recipes?: string[] | null
+          tips?: string[] | null
+          title: string
+          updated_at?: string
+          video_url?: string | null
+        }
+        Update: {
+          category?: string
+          content?: string
+          created_at?: string
+          description?: string
+          difficulty?: string
+          duration?: string
+          equipment_needed?: string[] | null
+          id?: string
+          image_url?: string | null
+          recipes?: string[] | null
+          tips?: string[] | null
+          title?: string
+          updated_at?: string
+          video_url?: string | null
+        }
+        Relationships: []
+      }
+      reference_guides: {
+        Row: {
+          category: string
+          content: string
+          created_at: string
+          data: Json | null
+          icon_name: string
+          id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          category: string
+          content: string
+          created_at?: string
+          data?: Json | null
+          icon_name: string
+          id?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          content?: string
+          created_at?: string
+          data?: Json | null
+          icon_name?: string
+          id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
