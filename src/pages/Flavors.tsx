@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import FlavorCard from '../components/FlavorCard';
+import FlavorFilter from '../components/FlavorFilter';
 import CocktailCard from '../components/CocktailCard';
 import BottomNavigation from '../components/BottomNavigation';
 import { supabase } from '@/integrations/supabase/client';
@@ -11,60 +11,36 @@ import { toast } from 'sonner';
 
 const Flavors = () => {
   const navigate = useNavigate();
-  const [selectedFlavor, setSelectedFlavor] = useState<string | null>(null);
+  const [selectedFlavors, setSelectedFlavors] = useState<string[]>([]);
+  const [showResults, setShowResults] = useState(false);
 
-  const flavorProfiles = [
-    {
-      id: 'Sweet',
-      name: 'Sweet',
-      description: 'Rich and indulgent sweetness',
-      image: 'https://images.unsplash.com/photo-1551538827-9c037cb4f32a?w=300&h=300&fit=crop'
-    },
-    {
-      id: 'Sour',
-      name: 'Sour',
-      description: 'Tart and tangy flavors',
-      image: 'https://images.unsplash.com/photo-1546171753-97d7676e4602?w=300&h=300&fit=crop'
-    },
-    {
-      id: 'Bitter',
-      name: 'Bitter',
-      description: 'Complex and sophisticated',
-      image: 'https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=300&h=300&fit=crop'
-    },
-    {
-      id: 'Herbal',
-      name: 'Herbal',
-      description: 'Fresh herbs and botanicals',
-      image: 'https://images.unsplash.com/photo-1551538827-9c037cb4f32a?w=300&h=300&fit=crop'
-    },
-    {
-      id: 'Tropical',
-      name: 'Tropical',
-      description: 'Exotic tropical fruit flavors',
-      image: 'https://images.unsplash.com/photo-1546171753-97d7676e4602?w=300&h=300&fit=crop'
-    },
-    {
-      id: 'Spicy',
-      name: 'Spicy',
-      description: 'Bold and warming spices',
-      image: 'https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=300&h=300&fit=crop'
-    }
+  const availableFlavors = [
+    'Fruity',
+    'Bubbly', 
+    'Sweet',
+    'Sour',
+    'Bitter',
+    'Herbal',
+    'Tropical',
+    'Spicy',
+    'Creamy',
+    'Citrus'
   ];
 
-  // Fetch cocktails based on selected flavor
+  // Fetch cocktails based on selected flavors
   const { data: cocktails, isLoading, error } = useQuery({
-    queryKey: ['cocktails', selectedFlavor],
+    queryKey: ['cocktails', selectedFlavors],
     queryFn: async () => {
-      if (!selectedFlavor) return [];
+      if (selectedFlavors.length === 0) return [];
       
-      console.log('Fetching cocktails for flavor:', selectedFlavor);
+      console.log('Fetching cocktails for flavors:', selectedFlavors);
       
       const { data, error } = await supabase
         .from('cocktails')
         .select('*')
-        .contains('flavor_profile', [selectedFlavor])
-        .order('drink_name');
+        .overlaps('flavor_profile', selectedFlavors)
+        .order('drink_name')
+        .limit(3);
       
       if (error) {
         console.error('Error fetching cocktails:', error);
@@ -75,52 +51,78 @@ const Flavors = () => {
       console.log('Fetched cocktails:', data);
       return data || [];
     },
-    enabled: !!selectedFlavor,
+    enabled: showResults && selectedFlavors.length > 0,
   });
 
-  const handleFlavorSelect = (flavorId: string) => {
-    console.log('Selected flavor:', flavorId);
-    setSelectedFlavor(flavorId);
+  const handleFlavorToggle = (flavor: string) => {
+    setSelectedFlavors(prev => 
+      prev.includes(flavor)
+        ? prev.filter(f => f !== flavor)
+        : [...prev, flavor]
+    );
   };
 
-  const handleBackToFlavors = () => {
-    setSelectedFlavor(null);
+  const handleSubmit = () => {
+    if (selectedFlavors.length === 0) {
+      toast.error('Please select at least one flavor profile');
+      return;
+    }
+    
+    console.log('Submitting flavors:', selectedFlavors);
+    setShowResults(true);
   };
 
-  if (selectedFlavor) {
-    const flavorName = flavorProfiles.find(f => f.id === selectedFlavor)?.name;
+  const handleBackToFilters = () => {
+    setShowResults(false);
+  };
 
+  if (showResults) {
     return (
       <div className="min-h-screen bg-bartender-background pb-20">
         <div className="px-4 pt-12 pb-8">
           {/* Header */}
           <div className="flex items-center mb-8">
             <button 
-              onClick={handleBackToFlavors}
+              onClick={handleBackToFilters}
               className="w-10 h-10 bg-bartender-surface rounded-full flex items-center justify-center mr-4"
             >
-              <ArrowLeft size={20} className="text-muted-foreground" />
+              <ArrowLeft size={20} className="text-white" />
             </button>
-            <h1 className="text-2xl font-bold text-foreground">{flavorName} Cocktails</h1>
+            <h1 className="text-2xl font-bold text-white">Recommended Cocktails</h1>
+          </div>
+
+          {/* Selected Flavors */}
+          <div className="mb-6">
+            <p className="text-white mb-2">Based on your flavor preferences:</p>
+            <div className="flex flex-wrap gap-2">
+              {selectedFlavors.map(flavor => (
+                <span key={flavor} className="px-3 py-1 bg-bartender-amber/20 text-bartender-amber rounded-full text-sm">
+                  {flavor}
+                </span>
+              ))}
+            </div>
           </div>
 
           {/* Loading state */}
           {isLoading && (
             <div className="text-center py-8">
-              <p className="text-muted-foreground">Loading cocktails...</p>
+              <p className="text-white">Finding perfect cocktails for you...</p>
             </div>
           )}
 
           {/* Error state */}
           {error && (
             <div className="text-center py-8">
-              <p className="text-red-500">Failed to load cocktails. Please try again.</p>
+              <p className="text-red-400">Failed to load cocktails. Please try again.</p>
             </div>
           )}
 
           {/* Cocktail Recommendations */}
           {cocktails && cocktails.length > 0 && (
             <div className="space-y-4">
+              <h2 className="text-lg font-semibold text-white mb-4">
+                Top 3 Cocktails for You
+              </h2>
               {cocktails.map((cocktail, index) => (
                 <div key={cocktail.id} style={{ animationDelay: `${index * 0.1}s` }}>
                   <CocktailCard cocktail={cocktail} />
@@ -132,7 +134,7 @@ const Flavors = () => {
           {/* No cocktails found */}
           {cocktails && cocktails.length === 0 && !isLoading && (
             <div className="text-center py-8">
-              <p className="text-muted-foreground">No cocktails found for this flavor profile.</p>
+              <p className="text-white">No cocktails found matching your selected flavors. Try different combinations!</p>
             </div>
           )}
         </div>
@@ -151,27 +153,44 @@ const Flavors = () => {
             onClick={() => navigate('/')}
             className="w-10 h-10 bg-bartender-surface rounded-full flex items-center justify-center mr-4"
           >
-            <ArrowLeft size={20} className="text-muted-foreground" />
+            <ArrowLeft size={20} className="text-white" />
           </button>
-          <h1 className="text-2xl font-bold text-foreground">Flavor Profiles</h1>
+          <h1 className="text-2xl font-bold text-white">Flavor Profiles</h1>
         </div>
 
         {/* Instructions */}
         <div className="mb-8">
-          <p className="text-lg text-foreground mb-2">Choose a flavor profile</p>
-          <p className="text-muted-foreground">
-            Discover cocktails that match your taste preferences
+          <p className="text-lg text-white mb-2">Choose your preferred flavors</p>
+          <p className="text-white/70">
+            Select one or more flavor profiles to get personalized cocktail recommendations
           </p>
         </div>
 
-        {/* Flavor Grid */}
-        <div className="grid grid-cols-2 gap-4">
-          {flavorProfiles.map((flavor, index) => (
-            <div key={flavor.id} style={{ animationDelay: `${index * 0.1}s` }}>
-              <FlavorCard flavor={flavor} onClick={() => handleFlavorSelect(flavor.id)} />
+        {/* Flavor Filters */}
+        <div className="space-y-4 mb-8">
+          {availableFlavors.map((flavor, index) => (
+            <div key={flavor} style={{ animationDelay: `${index * 0.05}s` }} className="animate-fade-in">
+              <FlavorFilter
+                flavor={flavor}
+                isSelected={selectedFlavors.includes(flavor)}
+                onToggle={handleFlavorToggle}
+              />
             </div>
           ))}
         </div>
+
+        {/* Submit Button */}
+        <button
+          onClick={handleSubmit}
+          disabled={selectedFlavors.length === 0}
+          className={`w-full py-4 rounded-xl font-bold text-lg transition-all duration-300 ${
+            selectedFlavors.length > 0
+              ? 'bg-bartender-amber text-bartender-background hover:bg-bartender-amber-light'
+              : 'bg-bartender-surface text-white/50 cursor-not-allowed'
+          }`}
+        >
+          Get My Cocktail Recommendations ({selectedFlavors.length} selected)
+        </button>
       </div>
 
       <BottomNavigation />
