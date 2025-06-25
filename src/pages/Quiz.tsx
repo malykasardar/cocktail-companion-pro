@@ -1,65 +1,59 @@
 
-import React, { useState } from 'react';
-import { ArrowLeft, CheckCircle } from 'lucide-react';
+import React from 'react';
+import { ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import QuizCard from '../components/QuizCard';
 import BottomNavigation from '../components/BottomNavigation';
+import QuizModeCard from '../components/QuizModeCard';
 
 const Quiz = () => {
   const navigate = useNavigate();
-  const [selectedAnswers, setSelectedAnswers] = useState<Record<string, string>>({});
-  const [showResults, setShowResults] = useState(false);
 
-  const quizData = [
+  const quizModes = [
     {
-      id: '1',
-      name: 'Vodka Gimlet',
-      ingredients: 'Vodka, lime juice, simple syrup, soda water',
-      image: 'https://images.unsplash.com/photo-1551538827-9c037cb4f32a?w=100&h=100&fit=crop'
+      id: 'flashcards',
+      title: 'Flashcards',
+      description: 'Study cocktail recipes with interactive flashcards',
+      icon: '🗂️',
+      color: 'bg-gradient-to-br from-blue-500 to-blue-600',
+      route: '/quiz/flashcards'
     },
     {
-      id: '2',
-      name: 'Gin Fizz',
-      ingredients: 'Gin, lemon juice, simple syrup, soda water',
-      image: 'https://images.unsplash.com/photo-1546171753-97d7676e4602?w=100&h=100&fit=crop'
+      id: 'speed-round',
+      title: 'Speed Round',
+      description: 'Quick-fire questions to test your knowledge',
+      icon: '⚡',
+      color: 'bg-gradient-to-br from-yellow-500 to-orange-500',
+      route: '/quiz/speed-round'
     },
     {
-      id: '3',
-      name: 'Margarita',
-      ingredients: 'Tequila, lime juice, agave nectar',
-      image: 'https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=100&h=100&fit=crop'
+      id: 'memory-test',
+      title: 'Memory Test',
+      description: 'Match cocktails with their ingredients',
+      icon: '🧠',
+      color: 'bg-gradient-to-br from-purple-500 to-purple-600',
+      route: '/quiz/memory-test'
     },
     {
-      id: '4',
-      name: 'Mojito',
-      ingredients: 'Rum, lime juice, simple syrup, mint',
-      image: 'https://images.unsplash.com/photo-1551538827-9c037cb4f32a?w=100&h=100&fit=crop'
+      id: 'multiple-choice',
+      title: 'Multiple Choice',
+      description: 'Choose the correct answer from options',
+      icon: '✅',
+      color: 'bg-gradient-to-br from-green-500 to-green-600',
+      route: '/quiz/multiple-choice'
+    },
+    {
+      id: 'drag-drop',
+      title: 'Drink Builder',
+      description: 'Drag and drop ingredients to build cocktails',
+      icon: '🍹',
+      color: 'bg-gradient-to-br from-pink-500 to-red-500',
+      route: '/quiz/drag-drop'
     }
   ];
 
-  const correctAnswers = {
-    '1': 'Vodka, lime juice, simple syrup, soda water',
-    '2': 'Gin, lemon juice, simple syrup, soda water',
-    '3': 'Tequila, lime juice, agave nectar',
-    '4': 'Rum, lime juice, simple syrup, mint'
-  };
-
-  const handleAnswerSelect = (cocktailId: string, answer: string) => {
-    setSelectedAnswers(prev => ({
-      ...prev,
-      [cocktailId]: answer
-    }));
-  };
-
-  const handleCheckAnswers = () => {
-    setShowResults(true);
-  };
-
-  const getScore = () => {
-    const correct = Object.entries(selectedAnswers).filter(
-      ([id, answer]) => correctAnswers[id as keyof typeof correctAnswers] === answer
-    ).length;
-    return `${correct}/${Object.keys(correctAnswers).length}`;
+  const handleModeClick = (mode: typeof quizModes[0]) => {
+    console.log('Opening quiz mode:', mode.title);
+    navigate(mode.route);
   };
 
   return (
@@ -69,55 +63,31 @@ const Quiz = () => {
         <div className="flex items-center mb-8">
           <button 
             onClick={() => navigate('/')}
-            className="w-10 h-10 bg-bartender-surface rounded-full flex items-center justify-center mr-4"
+            className="w-10 h-10 bg-bartender-surface rounded-full flex items-center justify-center mr-4 hover:bg-bartender-surface-light transition-colors"
           >
             <ArrowLeft size={20} className="text-muted-foreground" />
           </button>
-          <h1 className="text-2xl font-bold text-foreground">Memory Test</h1>
+          <h1 className="text-3xl font-bold text-foreground">Quiz Modes</h1>
         </div>
 
-        {/* Instructions */}
+        {/* Description */}
         <div className="mb-8">
           <p className="text-muted-foreground text-lg">
-            Match the cocktail with its ingredients.
+            Choose your preferred way to test your bartending knowledge
           </p>
         </div>
 
-        {/* Quiz Cards */}
-        <div className="space-y-4 mb-8">
-          {quizData.map((cocktail, index) => (
-            <div key={cocktail.id} style={{ animationDelay: `${index * 0.1}s` }}>
-              <QuizCard 
-                cocktail={cocktail} 
-                onClick={() => handleAnswerSelect(cocktail.id, cocktail.ingredients)}
+        {/* Quiz Mode Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {quizModes.map((mode, index) => (
+            <div key={mode.id} style={{ animationDelay: `${index * 0.1}s` }}>
+              <QuizModeCard 
+                mode={mode}
+                onClick={() => handleModeClick(mode)}
               />
-              {selectedAnswers[cocktail.id] && (
-                <div className="mt-2 ml-20 flex items-center">
-                  <CheckCircle size={16} className="text-green-400 mr-2" />
-                  <span className="text-sm text-green-400">Selected</span>
-                </div>
-              )}
             </div>
           ))}
         </div>
-
-        {/* Check Answers Button */}
-        {Object.keys(selectedAnswers).length === quizData.length && !showResults && (
-          <button 
-            onClick={handleCheckAnswers}
-            className="w-full bartender-button animate-fade-in"
-          >
-            Check Answers
-          </button>
-        )}
-
-        {/* Results */}
-        {showResults && (
-          <div className="bartender-card text-center animate-scale-in">
-            <h3 className="text-xl font-bold text-bartender-amber mb-2">Quiz Complete!</h3>
-            <p className="text-lg text-foreground">Your Score: {getScore()}</p>
-          </div>
-        )}
       </div>
 
       <BottomNavigation />

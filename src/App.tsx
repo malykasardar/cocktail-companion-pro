@@ -12,6 +12,11 @@ import Reference from "./pages/Reference";
 import LessonDetail from "./pages/LessonDetail";
 import ReferenceDetail from "./pages/ReferenceDetail";
 import NotFound from "./pages/NotFound";
+import Flashcards from "./pages/quiz/Flashcards";
+import SpeedRound from "./pages/quiz/SpeedRound";
+import MemoryTest from "./pages/quiz/MemoryTest";
+import MultipleChoice from "./pages/quiz/MultipleChoice";
+import DragDrop from "./pages/quiz/DragDrop";
 
 const queryClient = new QueryClient();
 
@@ -24,6 +29,11 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Learn />} />
           <Route path="/quiz" element={<Quiz />} />
+          <Route path="/quiz/flashcards" element={<Flashcards />} />
+          <Route path="/quiz/speed-round" element={<SpeedRound />} />
+          <Route path="/quiz/memory-test" element={<MemoryTest />} />
+          <Route path="/quiz/multiple-choice" element={<MultipleChoice />} />
+          <Route path="/quiz/drag-drop" element={<DragDrop />} />
           <Route path="/flavors" element={<Flavors />} />
           <Route path="/drinkwise" element={<DrinkWise />} />
           <Route path="/reference" element={<Reference />} />

@@ -12,17 +12,22 @@ const Learn = () => {
   const navigate = useNavigate();
   const categories = ['All', 'Basics', 'Techniques', 'Recipes', 'Advanced'];
   const [activeCategory, setActiveCategory] = React.useState('All');
+  const [searchQuery, setSearchQuery] = React.useState('');
 
   // Fetch lessons from database
   const { data: lessons, isLoading, error } = useQuery({
-    queryKey: ['lessons', activeCategory],
+    queryKey: ['lessons', activeCategory, searchQuery],
     queryFn: async () => {
-      console.log('Fetching lessons for category:', activeCategory);
+      console.log('Fetching lessons for category:', activeCategory, 'search:', searchQuery);
       
       let query = supabase.from('lessons').select('*').order('created_at', { ascending: true });
       
       if (activeCategory !== 'All') {
         query = query.eq('category', activeCategory);
+      }
+      
+      if (searchQuery.trim()) {
+        query = query.or(`title.ilike.%${searchQuery}%,description.ilike.%${searchQuery}%`);
       }
       
       const { data, error } = await query;
@@ -43,14 +48,27 @@ const Learn = () => {
     navigate(`/lesson/${lesson.id}`);
   };
 
+  // Convert duration string to number (extract minutes)
+  const parseDuration = (duration: string) => {
+    const match = duration.match(/(\d+)/);
+    return match ? parseInt(match[1]) : 0;
+  };
+
   return (
     <div className="min-h-screen bg-bartender-background pb-20">
       <div className="px-4 pt-12 pb-8">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-3xl font-bold text-foreground">Learn</h1>
-          <div className="w-10 h-10 bg-bartender-surface rounded-full flex items-center justify-center">
-            <Search size={20} className="text-muted-foreground" />
+          <div className="relative">
+            <Search size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
+            <input
+              type="text"
+              placeholder="Search lessons..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-64 pl-10 pr-4 py-2 bg-bartender-surface rounded-full text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-bartender-amber"
+            />
           </div>
         </div>
 
@@ -95,7 +113,7 @@ const Learn = () => {
                     id: lesson.id,
                     title: lesson.title,
                     description: lesson.description,
-                    duration: lesson.duration,
+                    duration: parseDuration(lesson.duration),
                     difficulty: lesson.difficulty as 'Beginner' | 'Intermediate' | 'Advanced',
                     image: lesson.image_url || 'https://images.unsplash.com/photo-1551538827-9c037cb4f32a?w=400&h=300&fit=crop'
                   }}
@@ -109,7 +127,9 @@ const Learn = () => {
         {/* No lessons found */}
         {lessons && lessons.length === 0 && !isLoading && (
           <div className="text-center py-8">
-            <p className="text-muted-foreground">No lessons found for this category.</p>
+            <p className="text-muted-foreground">
+              {searchQuery ? `No lessons found matching "${searchQuery}"` : 'No lessons found for this category.'}
+            </p>
           </div>
         )}
       </div>
