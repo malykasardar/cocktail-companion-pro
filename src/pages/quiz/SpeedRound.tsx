@@ -53,6 +53,8 @@ const SpeedRound = () => {
   };
 
   const handleAnswer = (answer: string, correct: boolean) => {
+    if (selectedAnswer !== null) return; // Prevent multiple clicks
+    
     setSelectedAnswer(answer);
     
     setTimeout(() => {
@@ -66,7 +68,7 @@ const SpeedRound = () => {
       } else {
         setGameEnded(true);
       }
-    }, 1000);
+    }, 1500); // Increased delay to see result
   };
 
   const generateOptions = (correct: string, allCocktails: any[]) => {

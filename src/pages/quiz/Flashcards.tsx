@@ -10,6 +10,8 @@ const Flashcards = () => {
   const navigate = useNavigate();
   const [currentCard, setCurrentCard] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
+  const [knownCards, setKnownCards] = useState<Set<number>>(new Set());
+  const [unknownCards, setUnknownCards] = useState<Set<number>>(new Set());
 
   // Fetch cocktails for flashcards
   const { data: cocktails, isLoading } = useQuery({
@@ -44,6 +46,33 @@ const Flashcards = () => {
     }
   };
 
+  const markAsKnown = () => {
+    setKnownCards(prev => new Set([...prev, currentCard]));
+    setUnknownCards(prev => {
+      const newSet = new Set(prev);
+      newSet.delete(currentCard);
+      return newSet;
+    });
+    handleNext();
+  };
+
+  const markAsUnknown = () => {
+    setUnknownCards(prev => new Set([...prev, currentCard]));
+    setKnownCards(prev => {
+      const newSet = new Set(prev);
+      newSet.delete(currentCard);
+      return newSet;
+    });
+    handleNext();
+  };
+
+  const resetProgress = () => {
+    setKnownCards(new Set());
+    setUnknownCards(new Set());
+    setCurrentCard(0);
+    setIsFlipped(false);
+  };
+
   const handleFlip = () => {
     setIsFlipped(!isFlipped);
   };
@@ -74,6 +103,11 @@ const Flashcards = () => {
           </div>
           <div className="text-sm text-muted-foreground">
             {currentCard + 1} / {cocktails?.length || 0}
+            <div className="mt-1">
+              <span className="text-green-400">Known: {knownCards.size}</span>
+              {' • '}
+              <span className="text-red-400">Review: {unknownCards.size}</span>
+            </div>
           </div>
         </div>
 
@@ -106,6 +140,24 @@ const Flashcards = () => {
               </div>
             </div>
 
+            {/* Knowledge Assessment */}
+            {isFlipped && (
+              <div className="flex justify-center gap-4 mb-6">
+                <button
+                  onClick={markAsUnknown}
+                  className="px-6 py-3 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
+                >
+                  Need Review
+                </button>
+                <button
+                  onClick={markAsKnown}
+                  className="px-6 py-3 bg-green-500 text-white rounded-full hover:bg-green-600 transition-colors"
+                >
+                  I Know This
+                </button>
+              </div>
+            )}
+
             {/* Navigation */}
             <div className="flex justify-between">
               <button
@@ -115,13 +167,23 @@ const Flashcards = () => {
               >
                 Previous
               </button>
-              <button
-                onClick={handleNext}
-                disabled={!cocktails || currentCard >= cocktails.length - 1}
-                className="px-6 py-3 bg-bartender-amber text-bartender-background rounded-full disabled:opacity-50 disabled:cursor-not-allowed hover:bg-bartender-amber-light transition-colors"
-              >
-                Next
-              </button>
+              <div className="flex gap-2">
+                {cocktails && currentCard >= cocktails.length - 1 && (
+                  <button
+                    onClick={resetProgress}
+                    className="px-6 py-3 bg-bartender-surface text-foreground rounded-full hover:bg-bartender-surface-light transition-colors"
+                  >
+                    Reset
+                  </button>
+                )}
+                <button
+                  onClick={handleNext}
+                  disabled={!cocktails || currentCard >= cocktails.length - 1}
+                  className="px-6 py-3 bg-bartender-amber text-bartender-background rounded-full disabled:opacity-50 disabled:cursor-not-allowed hover:bg-bartender-amber-light transition-colors"
+                >
+                  {cocktails && currentCard >= cocktails.length - 1 ? 'Complete' : 'Next'}
+                </button>
+              </div>
             </div>
           </div>
         )}

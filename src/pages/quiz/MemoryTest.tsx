@@ -18,7 +18,7 @@ const MemoryTest = () => {
       const { data, error } = await supabase
         .from('cocktails')
         .select('*')
-        .limit(6);
+        .limit(4);
       
       if (error) {
         console.error('Error fetching cocktails:', error);
@@ -29,6 +29,18 @@ const MemoryTest = () => {
       return data || [];
     },
   });
+
+  // Generate shuffled options for each cocktail
+  const generateOptions = (correctIngredients: string, allCocktails: any[]) => {
+    const options = [correctIngredients];
+    const otherIngredients = allCocktails
+      .filter(c => c.ingredients !== correctIngredients)
+      .map(c => c.ingredients)
+      .slice(0, 3);
+    
+    options.push(...otherIngredients);
+    return options.sort(() => Math.random() - 0.5);
+  };
 
   const handleAnswerSelect = (cocktailId: string, answer: string) => {
     setSelectedAnswers(prev => ({
@@ -101,14 +113,14 @@ const MemoryTest = () => {
                     
                     <div className="space-y-2">
                       {/* Create options by shuffling ingredients from different cocktails */}
-                      {cocktails.map((option, optionIndex) => (
+                      {generateOptions(cocktail.ingredients, cocktails).map((option, optionIndex) => (
                         <button
                           key={optionIndex}
-                          onClick={() => handleAnswerSelect(cocktail.id, option.ingredients)}
+                          onClick={() => handleAnswerSelect(cocktail.id, option)}
                           className={`w-full p-3 text-left rounded-lg transition-colors ${
-                            selectedAnswers[cocktail.id] === option.ingredients
+                            selectedAnswers[cocktail.id] === option
                               ? showResults
-                                ? option.ingredients === cocktail.ingredients
+                                ? option === cocktail.ingredients
                                   ? 'bg-green-500 text-white'
                                   : 'bg-red-500 text-white'
                                 : 'bg-bartender-amber text-bartender-background'
@@ -116,7 +128,7 @@ const MemoryTest = () => {
                           }`}
                           disabled={showResults}
                         >
-                          {option.ingredients}
+                          {option}
                         </button>
                       ))}
                     </div>

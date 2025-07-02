@@ -34,13 +34,15 @@ const DragDrop = () => {
 
   // Generate random ingredients including correct ones
   const generateIngredients = (cocktail: any, allCocktails: any[]) => {
-    const correctIngredients = cocktail.ingredients.split(', ').slice(0, 3);
-    const allIngredients = allCocktails
-      .flatMap(c => c.ingredients.split(', '))
+    const correctIngredients = cocktail.ingredients.split(', ').map((ing: string) => ing.trim());
+    const incorrectIngredients = allCocktails
+      .flatMap(c => c.ingredients.split(', ').map((ing: string) => ing.trim()))
       .filter(ing => !correctIngredients.includes(ing))
-      .slice(0, 6);
+      .filter((value, index, self) => self.indexOf(value) === index) // Remove duplicates
+      .sort(() => Math.random() - 0.5)
+      .slice(0, Math.max(6, correctIngredients.length * 2));
     
-    return [...correctIngredients, ...allIngredients].sort(() => Math.random() - 0.5);
+    return [...correctIngredients, ...incorrectIngredients].sort(() => Math.random() - 0.5);
   };
 
   const handleDragStart = (e: React.DragEvent, ingredient: string) => {
@@ -68,9 +70,11 @@ const DragDrop = () => {
     const current = cocktails?.[currentCocktail];
     if (!current) return;
     
-    const correctIngredients = current.ingredients.split(', ').slice(0, 3);
-    const isCorrect = correctIngredients.every(ing => droppedIngredients.includes(ing)) &&
-                     droppedIngredients.every(ing => correctIngredients.includes(ing));
+    const correctIngredients = current.ingredients.split(', ').map((ing: string) => ing.trim());
+    const droppedClean = droppedIngredients.map(ing => ing.trim());
+    
+    const isCorrect = correctIngredients.length === droppedClean.length &&
+                     correctIngredients.every(ing => droppedClean.includes(ing));
     
     if (isCorrect) {
       setScore(score + 1);
@@ -104,7 +108,7 @@ const DragDrop = () => {
 
   const current = cocktails?.[currentCocktail];
   const ingredients = current && cocktails ? generateIngredients(current, cocktails) : [];
-  const correctIngredients = current ? current.ingredients.split(', ').slice(0, 3) : [];
+  const correctIngredients = current ? current.ingredients.split(', ').map((ing: string) => ing.trim()) : [];
 
   return (
     <div className="min-h-screen bg-bartender-background">
@@ -212,10 +216,10 @@ const DragDrop = () => {
                   <div className="space-y-4">
                     <div className="bg-bartender-surface rounded-lg p-4">
                       <p className="text-foreground">
-                        {correctIngredients.every(ing => droppedIngredients.includes(ing)) &&
-                         droppedIngredients.every(ing => correctIngredients.includes(ing))
+                        {correctIngredients.length === droppedIngredients.length &&
+                         correctIngredients.every(ing => droppedIngredients.map(d => d.trim()).includes(ing.trim()))
                           ? '🎉 Perfect! You built the cocktail correctly!'
-                          : '❌ Not quite right. The correct ingredients are highlighted in green.'}
+                          : `❌ Not quite right. You need exactly these ${correctIngredients.length} ingredients: ${correctIngredients.join(', ')}`}
                       </p>
                     </div>
                     
