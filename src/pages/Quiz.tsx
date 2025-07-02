@@ -14,7 +14,6 @@ const Quiz = () => {
       title: 'Flashcards',
       description: 'Study cocktail recipes with interactive flashcards',
       icon: '🗂️',
-      color: 'bg-gradient-to-br from-blue-500 to-blue-600',
       route: '/quiz/flashcards'
     },
     {
@@ -22,7 +21,6 @@ const Quiz = () => {
       title: 'Speed Round',
       description: 'Quick-fire questions to test your knowledge',
       icon: '⚡',
-      color: 'bg-gradient-to-br from-yellow-500 to-orange-500',
       route: '/quiz/speed-round'
     },
     {
@@ -30,7 +28,6 @@ const Quiz = () => {
       title: 'Memory Test',
       description: 'Match cocktails with their ingredients',
       icon: '🧠',
-      color: 'bg-gradient-to-br from-purple-500 to-purple-600',
       route: '/quiz/memory-test'
     },
     {
@@ -38,7 +35,6 @@ const Quiz = () => {
       title: 'Multiple Choice',
       description: 'Choose the correct answer from options',
       icon: '✅',
-      color: 'bg-gradient-to-br from-green-500 to-green-600',
       route: '/quiz/multiple-choice'
     },
     {
@@ -46,7 +42,6 @@ const Quiz = () => {
       title: 'Drink Builder',
       description: 'Drag and drop ingredients to build cocktails',
       icon: '🍹',
-      color: 'bg-gradient-to-br from-pink-500 to-red-500',
       route: '/quiz/drag-drop'
     }
   ];

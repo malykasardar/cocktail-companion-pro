@@ -6,7 +6,6 @@ interface QuizMode {
   title: string;
   description: string;
   icon: string;
-  color: string;
   route: string;
 }
 
@@ -18,28 +17,27 @@ interface QuizModeCardProps {
 const QuizModeCard = ({ mode, onClick }: QuizModeCardProps) => {
   return (
     <div 
-      className="relative overflow-hidden rounded-2xl cursor-pointer group transition-all duration-300 hover:scale-105 hover:shadow-xl animate-fade-in"
+      className="bg-bartender-surface hover:bg-bartender-surface-light border border-bartender-surface-light rounded-2xl cursor-pointer group transition-all duration-300 hover:scale-[1.02] hover:shadow-xl animate-fade-in"
       onClick={onClick}
     >
-      {/* Background Gradient */}
-      <div className={`${mode.color} p-6 h-40 flex flex-col justify-between relative`}>
+      <div className="p-6 h-40 flex flex-col justify-between relative">
         {/* Icon */}
         <div className="text-4xl mb-2 group-hover:scale-110 transition-transform duration-300">
           {mode.icon}
         </div>
         
         {/* Content */}
-        <div className="text-white">
-          <h3 className="text-xl font-bold mb-2 group-hover:text-yellow-200 transition-colors">
+        <div>
+          <h3 className="text-xl font-bold mb-2 text-white group-hover:text-bartender-amber transition-colors">
             {mode.title}
           </h3>
-          <p className="text-sm opacity-90 group-hover:opacity-100 transition-opacity">
+          <p className="text-sm text-white/70 group-hover:text-white/90 transition-colors">
             {mode.description}
           </p>
         </div>
 
         {/* Hover Effect Overlay */}
-        <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+        <div className="absolute inset-0 bg-bartender-amber/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-2xl" />
       </div>
     </div>
   );
