@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { ArrowLeft, CheckCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -113,7 +113,7 @@ const MemoryTest = () => {
                     
                     <div className="space-y-2">
                       {/* Create options by shuffling ingredients from different cocktails */}
-                      {generateOptions(cocktail.ingredients, cocktails).map((option, optionIndex) => (
+                      {useMemo(() => generateOptions(cocktail.ingredients, cocktails), [cocktail.ingredients, cocktails]).map((option, optionIndex) => (
                         <button
                           key={optionIndex}
                           onClick={() => handleAnswerSelect(cocktail.id, option)}

@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { ArrowLeft, Clock } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -91,7 +91,10 @@ const SpeedRound = () => {
   }
 
   const currentCocktail = cocktails?.[currentQuestion];
-  const options = currentCocktail && cocktails ? generateOptions(currentCocktail.ingredients, cocktails) : [];
+  const options = useMemo(() => 
+    currentCocktail && cocktails ? generateOptions(currentCocktail.ingredients, cocktails) : [],
+    [currentCocktail, cocktails]
+  );
 
   return (
     <div className="min-h-screen bg-bartender-background">

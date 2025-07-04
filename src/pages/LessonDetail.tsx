@@ -135,10 +135,23 @@ const LessonDetail = () => {
 
         {/* Lesson Content */}
         <div className="bartender-card mb-6">
-          <h3 className="text-xl font-bold text-foreground mb-4">Lesson Content</h3>
-          <div className="prose prose-invert max-w-none">
-            <div className="whitespace-pre-wrap text-muted-foreground leading-relaxed">
-              {lesson.content}
+          <h3 className="text-xl font-bold text-foreground mb-4 flex items-center">
+            <BookOpen size={20} className="mr-2 text-bartender-amber" />
+            Lesson Content
+          </h3>
+          <div className="bg-gradient-to-br from-bartender-surface to-bartender-surface-light rounded-lg p-6 border border-bartender-amber/10">
+            <div className="prose prose-invert max-w-none">
+              <div className="whitespace-pre-wrap text-muted-foreground leading-relaxed text-lg">
+                {lesson.content.split('\n\n').map((paragraph, index) => (
+                  <div 
+                    key={index} 
+                    className="mb-4 p-4 bg-bartender-background/30 rounded-lg border-l-4 border-bartender-amber/30 hover:border-bartender-amber/60 transition-colors"
+                    style={{ animationDelay: `${index * 0.1}s` }}
+                  >
+                    <p className="animate-fade-in">{paragraph}</p>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>
@@ -146,12 +159,19 @@ const LessonDetail = () => {
         {/* Equipment Needed */}
         {lesson.equipment_needed && lesson.equipment_needed.length > 0 && (
           <div className="bartender-card mb-6">
-            <h3 className="text-xl font-bold text-foreground mb-4">Equipment Needed</h3>
-            <div className="grid grid-cols-2 gap-2">
+            <h3 className="text-xl font-bold text-foreground mb-4 flex items-center">
+              <User size={20} className="mr-2 text-bartender-amber" />
+              Equipment Needed
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {lesson.equipment_needed.map((equipment, index) => (
-                <div key={index} className="flex items-center p-2 bg-bartender-surface rounded-lg">
-                  <div className="w-2 h-2 bg-bartender-amber rounded-full mr-3"></div>
-                  <span className="text-sm text-foreground">{equipment}</span>
+                <div 
+                  key={index} 
+                  className="flex items-center p-4 bg-gradient-to-r from-bartender-surface to-bartender-surface-light rounded-lg border border-bartender-amber/20 hover:border-bartender-amber/40 transition-all duration-300 hover:scale-105 animate-fade-in"
+                  style={{ animationDelay: `${index * 0.1}s` }}
+                >
+                  <div className="w-3 h-3 bg-bartender-amber rounded-full mr-4 animate-pulse"></div>
+                  <span className="text-foreground font-medium">{equipment}</span>
                 </div>
               ))}
             </div>
@@ -175,14 +195,23 @@ const LessonDetail = () => {
         {/* Tips */}
         {lesson.tips && lesson.tips.length > 0 && (
           <div className="bartender-card mb-6">
-            <h3 className="text-xl font-bold text-foreground mb-4">Pro Tips</h3>
-            <div className="space-y-3">
+            <h3 className="text-xl font-bold text-foreground mb-4 flex items-center">
+              <Clock size={20} className="mr-2 text-bartender-amber" />
+              Pro Tips
+            </h3>
+            <div className="space-y-4">
               {lesson.tips.map((tip, index) => (
-                <div key={index} className="flex items-start p-3 bg-bartender-surface rounded-lg">
-                  <div className="w-6 h-6 bg-bartender-amber/20 rounded-full flex items-center justify-center mr-3 mt-0.5">
-                    <span className="text-xs font-bold text-bartender-amber">{index + 1}</span>
+                <div 
+                  key={index} 
+                  className="group flex items-start p-4 bg-gradient-to-r from-bartender-surface via-bartender-surface-light to-bartender-surface rounded-lg border border-bartender-amber/10 hover:border-bartender-amber/30 transition-all duration-300 hover:scale-[1.02] animate-fade-in"
+                  style={{ animationDelay: `${index * 0.1}s` }}
+                >
+                  <div className="w-8 h-8 bg-gradient-to-br from-bartender-amber to-bartender-amber/70 rounded-full flex items-center justify-center mr-4 mt-0.5 shadow-lg group-hover:scale-110 transition-transform">
+                    <span className="text-sm font-bold text-bartender-background">{index + 1}</span>
                   </div>
-                  <p className="text-sm text-muted-foreground">{tip}</p>
+                  <div className="flex-1">
+                    <p className="text-muted-foreground leading-relaxed group-hover:text-foreground transition-colors">{tip}</p>
+                  </div>
                 </div>
               ))}
             </div>
